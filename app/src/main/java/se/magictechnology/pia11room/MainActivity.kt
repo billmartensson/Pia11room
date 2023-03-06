@@ -14,11 +14,19 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
-    var peopleadapter = PeopleAdapter()
+    lateinit var db : AppDatabase
+
+    var peopleadapter = PeopleAdapter(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "database-name"
+        ).build()
+
 
         var peoplerv = findViewById<RecyclerView>(R.id.peopleRV)
 
@@ -32,18 +40,28 @@ class MainActivity : AppCompatActivity() {
 
             val nyperson = User(0, firstname, lastname)
 
+            CoroutineScope(Dispatchers.IO).launch {
+                val userDao = db.userDao()
+                userDao.insertAll(nyperson)
+                loadpeople()
+            }
 
         }
-
 
         loadpeople()
     }
 
+    fun clickRow(person : User) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val userDao = db.userDao()
+            userDao.delete(person)
+            loadpeople()
+        }
+    }
+
+
     fun loadpeople() {
-        val db = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java, "database-name"
-        ).build()
+
 
         CoroutineScope(Dispatchers.IO).launch {
             val userDao = db.userDao()
@@ -52,7 +70,9 @@ class MainActivity : AppCompatActivity() {
 
             peopleadapter.people = allpeople.toMutableList()
 
-            peopleadapter.notifyDataSetChanged()
+            runOnUiThread {
+                peopleadapter.notifyDataSetChanged()
+            }
         }
     }
 

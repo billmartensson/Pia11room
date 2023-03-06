@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class PeopleAdapter : RecyclerView.Adapter<PeopleAdapter.ViewHolder>() {
+class PeopleAdapter(val mainact : MainActivity) : RecyclerView.Adapter<PeopleAdapter.ViewHolder>() {
 
     var people = mutableListOf<User>()
 
@@ -26,7 +26,12 @@ class PeopleAdapter : RecyclerView.Adapter<PeopleAdapter.ViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.personName.text = people[position].firstName
+        holder.personName.text = people[position].firstName + " " + people[position].lastName
+
+        holder.itemView.setOnClickListener {
+            mainact.clickRow(people[position])
+        }
+
     }
 
     override fun getItemCount(): Int {
